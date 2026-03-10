@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Descent Sort</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --panel: #111118;
+            --border: #1e1e2e;
+            --green: #7fff6e;
+            --pink: #ff6eb4;
+            --blue: #6eb4ff;
+            --text: #e0e0f0;
+            --muted: #555570;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 16px;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            color: var(--green);
+            text-transform: uppercase;
+        }
+
+        .sub {
+            font-size: 0.67rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+        }
+
+        /* top config bar */
+        .config {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            width: 100%;
+            max-width: 1060px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field label {
+            font-size: 0.58rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        input[type=text],
+        input[type=number],
+        select {
+            background: #0d0d16;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            padding: 7px 10px;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        input[type=text]:focus,
+        input[type=number]:focus,
+        select:focus {
+            border-color: var(--green);
+        }
+
+        input[type=text] {
+            width: 300px;
+        }
+
+        input[type=number] {
+            width: 90px;
+        }
+
+        select {
+            width: 130px;
+        }
+
+        .err {
+            font-size: 0.65rem;
+            color: var(--pink);
+            margin-top: 3px;
+            min-height: 14px;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--green);
+            color: var(--green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            transition: background 0.15s, color 0.15s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: var(--green);
+            color: var(--bg);
+        }
+
+        .btn.pink {
+            border-color: var(--pink);
+            color: var(--pink);
+        }
+
+        .btn.pink:hover {
+            background: var(--pink);
+            color: var(--bg);
+        }
+
+        /* main row */
+        .main {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            max-width: 1060px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .card-title {
+            font-size: 0.62rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            background: #1a1a2e;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 2px 9px;
+            color: var(--pink);
+            font-size: 0.68rem;
+            font-weight: 600;
+        }
+
+        .scatter-card {
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .scatter-card canvas {
+            display: block;
+            width: 100%;
+            height: 300px;
+        }
+
+        .sidebar {
+            flex: 0 0 210px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* step slider */
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .slider-label {
+            font-size: 0.58rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--green);
+            cursor: pointer;
+        }
+
+        .sval {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .stats {
+            background: #0d0d16;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 13px;
+            font-size: 0.7rem;
+            line-height: 2;
+            color: var(--muted);
+        }
+
+        .stats .v {
+            color: var(--text);
+        }
+
+        .stats .g {
+            color: var(--green);
+        }
+
+        .stats .r {
+            color: var(--pink);
+        }
+
+        .explain {
+            background: #0d0d16;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 13px;
+            font-size: 0.68rem;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
+        .explain .k {
+            color: var(--blue);
+        }
+
+        .explain .e {
+            color: var(--green);
+        }
+
+        .legend {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.62rem;
+            color: var(--muted);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .lseg {
+            width: 16px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        /* loss chart */
+        .loss-card {
+            width: 100%;
+            max-width: 1060px;
+        }
+
+        .loss-card canvas {
+            display: block;
+            width: 100%;
+            height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Gradient Descent Sort</h1>
+    <div class="sub">// the line learns to sort your array</div>
+
+    <div class="config">
+        <div class="field">
+            <label>Array (comma separated)</label>
+            <input type="text" id="arrInput" value="3, 17, 42, 5, 91, 28, 64, 11, 73, 36">
+            <div class="err" id="errMsg"></div>
+        </div>
+        <div class="field">
+            <label>Learning Rate</label>
+            <input type="number" id="lrInput" value="0.01" step="0.001" min="0.0001" max="2">
+        </div>
+        <div class="field">
+            <label>Max Steps</label>
+            <input type="number" id="stepsInput" value="1000" step="100" min="10" max="10000">
+        </div>
+        <div class="field">
+            <label>Normalization</label>
+            <select id="normSelect">
+                <option value="linear">Linear (min-max)</option>
+                <option value="log">Logarithmic</option>
+            </select>
+        </div>
+        <button class="btn" id="runBtn">▶ Run</button>
+        <button class="btn pink" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <div class="main">
+        <div class="card scatter-card">
+            <div class="card-title">
+                scatter: x_norm vs rank
+                <span class="badge" id="stepBadge">step 0</span>
+            </div>
+            <canvas id="scatterCanvas"></canvas>
+            <div class="legend">
+                <div class="leg">
+                    <div class="dot" style="background:var(--green)"></div>data points (fixed)
+                </div>
+                <div class="leg">
+                    <div class="lseg" style="background:var(--pink)"></div>regression line
+                </div>
+                <div class="leg">
+                    <div class="lseg" style="background:var(--blue);opacity:.5"></div>error
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card" style="padding:14px">
+                <div class="explain">
+                    <span class="k">Points</span> = (x_norm, rank)<br>
+                    <span class="k">Line</span> = w·x + b<br><br>
+                    <span class="e">Each step:</span><br>
+                    error = predicted − rank<br>
+                    dw = (2/n)·Σ error·x<br>
+                    db = (2/n)·Σ error<br>
+                    w −= lr·dw<br>
+                    b −= lr·db<br><br>
+                    Points <b>never</b> move!
+                </div>
+            </div>
+
+            <div class="card" style="padding:14px">
+                <div class="slider-label">step</div>
+                <input type="range" id="stepSlider" min="0" max="1000" value="0">
+                <div class="sval" id="stepVal">0</div>
+            </div>
+
+            <button class="btn" id="playBtn">▶ Play</button>
+
+            <div class="stats" id="statsBox">
+                w = <span class="v">—</span><br>
+                b = <span class="v">—</span><br>
+                MSE = <span class="r">—</span><br>
+                converged = <span class="v">—</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card loss-card">
+        <div class="card-title">MSE loss <span class="badge" id="lossBadge">—</span></div>
+        <canvas id="lossCanvas"></canvas>
+    </div>
+
+    <script>
+        let history = [];
+        let xNorm = [], trueRanks = [], rawArr = [];
+        let playing = false, raf = null;
+
+        // ── PARSE & NORMALIZE ─────────────────────────────────────────────────────────
+        function parseArr() {
+            const raw = document.getElementById('arrInput').value;
+            const nums = raw.split(',').map(s => +s.trim()).filter(s => s !== '');
+            if (nums.some(isNaN)) throw 'Invalid numbers';
+            if (nums.length < 2) throw 'Need at least 2 values';
+            if (nums.length > 60) throw 'Max 60 values';
+            return nums;
+        }
+
+        function normalize(arr, mode) {
+            if (mode === 'log') {
+                if (arr.some(v => v <= 0)) throw 'Log normalization requires all values > 0';
+                const logs = arr.map(v => Math.log(v));
+                const mn = Math.min(...logs), mx = Math.max(...logs);
+                if (mx === mn) return arr.map(() => 0);
+                return logs.map(v => (v - mn) / (mx - mn));
+            } else {
+                const mn = Math.min(...arr), mx = Math.max(...arr);
+                if (mx === mn) return arr.map(() => 0);
+                return arr.map(v => (v - mn) / (mx - mn));
+            }
+        }
+
+        // ── SIMULATE ──────────────────────────────────────────────────────────────────
+        function simulate(arr, xn, ranks, lr, maxSteps) {
+            const n = arr.length;
+            let w = 0, b = 0;
+            const hist = [{ w, b, mse: calcMSE(w, b, xn, ranks) }];
+
+            for (let s = 0; s < maxSteps; s++) {
+                const pred = xn.map(x => w * x + b);
+                const err = pred.map((p, i) => p - ranks[i]);
+                const loss = err.reduce((a, e) => a + e * e, 0) / n;
+                const dw = (2 / n) * xn.reduce((a, x, i) => a + err[i] * x, 0);
+                const db = (2 / n) * err.reduce((a, e) => a + e, 0);
+                w -= lr * dw;
+                b -= lr * db;
+                hist.push({ w, b, mse: calcMSE(w, b, xn, ranks) });
+                if (loss < 0.001) break;
+            }
+            return hist;
+        }
+
+        function calcMSE(w, b, xn, ranks) {
+            let s = 0;
+            for (let i = 0; i < xn.length; i++) { const e = (w * xn[i] + b) - ranks[i]; s += e * e; }
+            return s / xn.length;
+        }
+
+        // ── CANVAS ────────────────────────────────────────────────────────────────────
+        function setup(canvas) {
+            const d = window.devicePixelRatio || 1;
+            const r = canvas.getBoundingClientRect();
+            canvas.width = r.width * d; canvas.height = r.height * d;
+            const ctx = canvas.getContext('2d'); ctx.scale(d, d); return ctx;
+        }
+
+        function drawScatter(si) {
+            const canvas = document.getElementById('scatterCanvas');
+            const ctx = setup(canvas);
+            const W = canvas.getBoundingClientRect().width;
+            const H = canvas.getBoundingClientRect().height;
+            const p = { l: 38, r: 14, t: 18, b: 30 };
+            const cw = W - p.l - p.r, ch = H - p.t - p.b;
+
+            if (!history.length) return;
+            const idx = Math.min(si, history.length - 1);
+            const { w, b, mse } = history[idx];
+            const n = xNorm.length;
+            const maxRank = n - 1;
+
+            const px = xn => p.l + xn * cw;
+            const py = rank => p.t + ch - (rank / maxRank) * ch;
+
+            // grid
+            ctx.strokeStyle = '#1a1a28'; ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = p.t + (i / 5) * ch;
+                ctx.beginPath(); ctx.moveTo(p.l, y); ctx.lineTo(p.l + cw, y); ctx.stroke();
+                const x = p.l + (i / 5) * cw;
+                ctx.beginPath(); ctx.moveTo(x, p.t); ctx.lineTo(x, p.t + ch); ctx.stroke();
+            }
+
+            // axis labels
+            ctx.fillStyle = '#444460'; ctx.font = '9px JetBrains Mono, monospace';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= maxRank; i++) ctx.fillText(i, p.l - 4, py(i) + 3);
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= 5; i++) ctx.fillText((i / 5).toFixed(1), p.l + (i / 5) * cw, p.t + ch + 17);
+
+            // regression line
+            ctx.beginPath();
+            ctx.moveTo(px(0), py(w * 0 + b));
+            ctx.lineTo(px(1), py(w * 1 + b));
+            ctx.strokeStyle = '#ff6eb4'; ctx.lineWidth = 2.5;
+            ctx.shadowColor = '#ff6eb450'; ctx.shadowBlur = 10;
+            ctx.stroke(); ctx.shadowBlur = 0;
+
+            // error lines
+            ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+            for (let i = 0; i < n; i++) {
+                const pred = w * xNorm[i] + b;
+                if (Math.abs(pred - trueRanks[i]) > 0.05) {
+                    ctx.beginPath();
+                    ctx.moveTo(px(xNorm[i]), py(pred));
+                    ctx.lineTo(px(xNorm[i]), py(trueRanks[i]));
+                    ctx.strokeStyle = 'rgba(110,180,255,0.4)'; ctx.stroke();
+                }
+            }
+            ctx.setLineDash([]);
+
+            // points + labels
+            for (let i = 0; i < n; i++) {
+                ctx.beginPath();
+                ctx.arc(px(xNorm[i]), py(trueRanks[i]), 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#7fff6e'; ctx.shadowColor = '#7fff6e70'; ctx.shadowBlur = 7;
+                ctx.fill(); ctx.shadowBlur = 0;
+                if (n <= 30) {
+                    ctx.fillStyle = '#7fff6e'; ctx.font = 'bold 8px JetBrains Mono, monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(rawArr[i], px(xNorm[i]), py(trueRanks[i]) - 10);
+                }
+            }
+
+            document.getElementById('stepBadge').textContent = `step ${idx}`;
+            const conv = mse < 0.001;
+            document.getElementById('statsBox').innerHTML =
+                `w = <span class="v">${w.toFixed(5)}</span><br>` +
+                `b = <span class="v">${b.toFixed(5)}</span><br>` +
+                `MSE = <span class="${mse < 3 ? 'g' : 'r'}">${mse.toFixed(5)}</span><br>` +
+                `converged = <span class="${conv ? 'g' : 'v'}">${conv ? 'YES ✓' : 'no'}</span>`;
+        }
+
+        function drawLoss(si) {
+            const canvas = document.getElementById('lossCanvas');
+            const ctx = setup(canvas);
+            const W = canvas.getBoundingClientRect().width;
+            const H = canvas.getBoundingClientRect().height;
+            const p = { l: 50, r: 12, t: 8, b: 24 };
+            const cw = W - p.l - p.r, ch = H - p.t - p.b;
+
+            if (!history.length) return;
+            const maxS = history.length - 1;
+            const losses = history.map(h => h.mse);
+            const maxL = Math.max(...losses) * 1.05;
+
+            const px = s => p.l + (s / maxS) * cw;
+            const py = l => p.t + ch - Math.min(l / maxL, 1) * ch;
+
+            ctx.strokeStyle = '#1a1a28'; ctx.lineWidth = 1;
+            for (let i = 0; i <= 3; i++) {
+                const y = p.t + (i / 3) * ch;
+                ctx.beginPath(); ctx.moveTo(p.l, y); ctx.lineTo(p.l + cw, y); ctx.stroke();
+            }
+
+            // fill
+            ctx.beginPath();
+            ctx.moveTo(px(0), py(losses[0]));
+            for (let i = 1; i < history.length; i++) ctx.lineTo(px(i), py(losses[i]));
+            ctx.lineTo(px(history.length - 1), p.t + ch); ctx.lineTo(px(0), p.t + ch); ctx.closePath();
+            const g = ctx.createLinearGradient(0, p.t, 0, p.t + ch);
+            g.addColorStop(0, 'rgba(255,110,180,0.22)'); g.addColorStop(1, 'rgba(255,110,180,0.02)');
+            ctx.fillStyle = g; ctx.fill();
+
+            // line
+            ctx.beginPath();
+            ctx.moveTo(px(0), py(losses[0]));
+            for (let i = 1; i < history.length; i++) ctx.lineTo(px(i), py(losses[i]));
+            ctx.strokeStyle = '#ff6eb4'; ctx.lineWidth = 2; ctx.stroke();
+
+            // current dot
+            const idx = Math.min(si, maxS);
+            ctx.beginPath(); ctx.moveTo(px(idx), p.t); ctx.lineTo(px(idx), p.t + ch);
+            ctx.strokeStyle = '#7fff6e35'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.beginPath(); ctx.arc(px(idx), py(losses[idx]), 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#7fff6e'; ctx.shadowColor = '#7fff6e'; ctx.shadowBlur = 7;
+            ctx.fill(); ctx.shadowBlur = 0;
+
+            document.getElementById('lossBadge').textContent = `mse = ${losses[idx].toFixed(5)}`;
+
+            ctx.fillStyle = '#444460'; ctx.font = '8px JetBrains Mono, monospace';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 3; i++) {
+                const lv = maxL * (1 - i / 3);
+                ctx.fillText(lv > 100 ? lv.toFixed(0) : lv.toFixed(2), p.l - 3, p.t + (i / 3) * ch + 3);
+            }
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= 4; i++) ctx.fillText(Math.round(maxS * i / 4), px(maxS * i / 4), p.t + ch + 15);
+        }
+
+        // ── RENDER ────────────────────────────────────────────────────────────────────
+        let currentStep = 0;
+
+        function render(step) {
+            currentStep = step;
+            document.getElementById('stepSlider').value = step;
+            document.getElementById('stepVal').textContent = step;
+            drawScatter(step);
+            drawLoss(step);
+        }
+
+        // ── RUN ───────────────────────────────────────────────────────────────────────
+        function run() {
+            stopPlay();
+            const errEl = document.getElementById('errMsg');
+            errEl.textContent = '';
+            try {
+                rawArr = parseArr();
+            } catch (e) { errEl.textContent = e; return; }
+
+            const lr = parseFloat(document.getElementById('lrInput').value);
+            const maxSteps = parseInt(document.getElementById('stepsInput').value);
+            const normMode = document.getElementById('normSelect').value;
+
+            try {
+                xNorm = normalize(rawArr, normMode);
+            } catch (e) { errEl.textContent = e; return; }
+
+            const sorted = [...rawArr].sort((a, b) => a - b);
+            trueRanks = rawArr.map(v => sorted.indexOf(v));
+
+            history = simulate(rawArr, xNorm, trueRanks, lr, maxSteps);
+            document.getElementById('stepSlider').max = history.length - 1;
+            render(0);
+        }
+
+        // ── PLAY ──────────────────────────────────────────────────────────────────────
+        function stopPlay() {
+            playing = false;
+            document.getElementById('playBtn').textContent = '▶ Play';
+            if (raf) cancelAnimationFrame(raf);
+        }
+
+        document.getElementById('playBtn').addEventListener('click', function () {
+            if (!history.length) { run(); return; }
+            if (playing) { stopPlay(); return; }
+            playing = true; this.textContent = '⏸ Pause';
+            if (currentStep >= history.length - 1) currentStep = 0;
+            let last = null;
+            function loop(ts) {
+                if (!playing) return;
+                if (!last || ts - last > 30) {
+                    last = ts;
+                    currentStep = Math.min(currentStep + 5, history.length - 1);
+                    render(currentStep);
+                    if (currentStep >= history.length - 1) { stopPlay(); return; }
+                }
+                raf = requestAnimationFrame(loop);
+            }
+            raf = requestAnimationFrame(loop);
+        });
+
+        document.getElementById('stepSlider').addEventListener('input', function () {
+            stopPlay(); render(+this.value);
+        });
+
+        document.getElementById('runBtn').addEventListener('click', run);
+        document.getElementById('resetBtn').addEventListener('click', () => { stopPlay(); render(0); });
+
+        window.addEventListener('resize', () => render(currentStep));
+
+        // auto-run on load
+        run();
+    </script>
+</body>
+
+</html>

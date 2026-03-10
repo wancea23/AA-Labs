@@ -13,7 +13,6 @@ class GradientDescentSort:
         self.b = 0.0
         self.steps_taken = 0
         self.final_loss = 0
-        self.loss_history = []
         self.execution_time = 0
         
     def sort(self, arr):
@@ -302,7 +301,7 @@ def plot_results(results):
     ax = axes[1, 2]
     
     # Complexity comparison with traditional sorts
-    sizes = np.array([10, 50, 100, 500, 1000])
+    sizes = np.array([10, 50, 100, 500, 1000, 10000])
     n_log_n = sizes * np.log2(sizes)
     n_squared = sizes ** 2
     

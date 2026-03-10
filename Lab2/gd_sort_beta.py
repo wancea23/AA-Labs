@@ -7,14 +7,14 @@ def gradient_descent_sort(arr, lr, steps):
     true_ranks = np.argsort(np.argsort(original)).astype(float)
 
     # Normalization
-    # x_min, x_max = original.min(), original.max()
-    # x_norm = (original - x_min) / (x_max - x_min)
+    x_min, x_max = original.min(), original.max()
+    x_norm = (original - x_min) / (x_max - x_min)
 
     # Logarithmic normalization
-    assert np.all(original > 0), "All values must be positive for log normalization"
-    x_log = np.log(original)
-    x_min_l, x_max_l = x_log.min(), x_log.max()
-    x_norm = (x_log - x_min_l) / (x_max_l - x_min_l)
+    # assert np.all(original > 0), "All values must be positive for log normalization"
+    # x_log = np.log(original)
+    # x_min_l, x_max_l = x_log.min(), x_log.max()
+    # x_norm = (x_log - x_min_l) / (x_max_l - x_min_l)
 
     print("=" * 90)
     print(f"INPUT:        {original.astype(int).tolist()}")
@@ -68,7 +68,7 @@ def gradient_descent_sort(arr, lr, steps):
     print(f"  Match: {result == correct}")
 
 gradient_descent_sort(
-    [45, 3278, 12390, 0.0001, 0.0002, 0.000001,0.0000000000001,0.00000000000011,0.000002,0.5,2, 3, 99, 3232, 51515, 2009, 100000000, 89238293, 333, 9999999999999],
+    [45, 3278, 12390, 0.0001, 0.0002, 0.000001,0.0000000000001,0.00000000000011,0.000002,0.5,2, 3, 99, 3232, 51515, 200000000009],
     lr=0.01,
-    steps=10
+    steps=100
 )
