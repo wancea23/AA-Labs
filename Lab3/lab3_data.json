@@ -1,0 +1,344 @@
+[
+  {
+    "algorithm": "DFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 50,
+    "elapsed_ms": 0.3212,
+    "peak_memory_kb": 1.27,
+    "max_stack_depth": 36,
+    "nodes_visited": 50
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 50,
+    "elapsed_ms": 0.1257,
+    "peak_memory_kb": 1.6,
+    "max_stack_depth": 20,
+    "nodes_visited": 50
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 100,
+    "elapsed_ms": 0.2052,
+    "peak_memory_kb": 2.21,
+    "max_stack_depth": 72,
+    "nodes_visited": 100
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 100,
+    "elapsed_ms": 0.1046,
+    "peak_memory_kb": 2.93,
+    "max_stack_depth": 32,
+    "nodes_visited": 100
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 250,
+    "elapsed_ms": 0.504,
+    "peak_memory_kb": 5.45,
+    "max_stack_depth": 176,
+    "nodes_visited": 250
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 250,
+    "elapsed_ms": 0.2566,
+    "peak_memory_kb": 5.87,
+    "max_stack_depth": 88,
+    "nodes_visited": 250
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 500,
+    "elapsed_ms": 1.1935,
+    "peak_memory_kb": 10.86,
+    "max_stack_depth": 337,
+    "nodes_visited": 500
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 500,
+    "elapsed_ms": 0.533,
+    "peak_memory_kb": 10.3,
+    "max_stack_depth": 161,
+    "nodes_visited": 500
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 1000,
+    "elapsed_ms": 2.7635,
+    "peak_memory_kb": 20.8,
+    "max_stack_depth": 643,
+    "nodes_visited": 1000
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 1000,
+    "elapsed_ms": 1.2453,
+    "peak_memory_kb": 19.8,
+    "max_stack_depth": 321,
+    "nodes_visited": 1000
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 2500,
+    "elapsed_ms": 7.0749,
+    "peak_memory_kb": 53.64,
+    "max_stack_depth": 1640,
+    "nodes_visited": 2500
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 2500,
+    "elapsed_ms": 3.8326,
+    "peak_memory_kb": 47.57,
+    "max_stack_depth": 841,
+    "nodes_visited": 2500
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 5000,
+    "elapsed_ms": 13.9248,
+    "peak_memory_kb": 105.43,
+    "max_stack_depth": 3219,
+    "nodes_visited": 5000
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Sparse Random",
+    "num_vertices": 5000,
+    "elapsed_ms": 8.3133,
+    "peak_memory_kb": 91.55,
+    "max_stack_depth": 1565,
+    "nodes_visited": 5000
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 50,
+    "elapsed_ms": 0.3563,
+    "peak_memory_kb": 5.57,
+    "max_stack_depth": 550,
+    "nodes_visited": 50
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 50,
+    "elapsed_ms": 0.0771,
+    "peak_memory_kb": 1.59,
+    "max_stack_depth": 46,
+    "nodes_visited": 50
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 100,
+    "elapsed_ms": 1.6749,
+    "peak_memory_kb": 21.77,
+    "max_stack_depth": 2352,
+    "nodes_visited": 100
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 100,
+    "elapsed_ms": 0.1765,
+    "peak_memory_kb": 2.93,
+    "max_stack_depth": 90,
+    "nodes_visited": 100
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 250,
+    "elapsed_ms": 10.6817,
+    "peak_memory_kb": 137.57,
+    "max_stack_depth": 15329,
+    "nodes_visited": 250
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 250,
+    "elapsed_ms": 0.698,
+    "peak_memory_kb": 6.38,
+    "max_stack_depth": 241,
+    "nodes_visited": 250
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 500,
+    "elapsed_ms": 45.2134,
+    "peak_memory_kb": 496.3,
+    "max_stack_depth": 61963,
+    "nodes_visited": 500
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 500,
+    "elapsed_ms": 3.0801,
+    "peak_memory_kb": 12.39,
+    "max_stack_depth": 491,
+    "nodes_visited": 500
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 1000,
+    "elapsed_ms": 180.4748,
+    "peak_memory_kb": 2023.83,
+    "max_stack_depth": 248383,
+    "nodes_visited": 1000
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Dense Random",
+    "num_vertices": 1000,
+    "elapsed_ms": 11.7838,
+    "peak_memory_kb": 24.96,
+    "max_stack_depth": 989,
+    "nodes_visited": 1000
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 50,
+    "elapsed_ms": 0.1233,
+    "peak_memory_kb": 0.95,
+    "max_stack_depth": 6,
+    "nodes_visited": 50
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 50,
+    "elapsed_ms": 0.0772,
+    "peak_memory_kb": 1.59,
+    "max_stack_depth": 25,
+    "nodes_visited": 50
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 100,
+    "elapsed_ms": 0.2442,
+    "peak_memory_kb": 1.77,
+    "max_stack_depth": 7,
+    "nodes_visited": 100
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 100,
+    "elapsed_ms": 0.1117,
+    "peak_memory_kb": 2.93,
+    "max_stack_depth": 50,
+    "nodes_visited": 100
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 250,
+    "elapsed_ms": 0.6621,
+    "peak_memory_kb": 4.23,
+    "max_stack_depth": 8,
+    "nodes_visited": 250
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 250,
+    "elapsed_ms": 0.8526,
+    "peak_memory_kb": 5.87,
+    "max_stack_depth": 125,
+    "nodes_visited": 250
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 500,
+    "elapsed_ms": 1.3299,
+    "peak_memory_kb": 8.15,
+    "max_stack_depth": 9,
+    "nodes_visited": 500
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 500,
+    "elapsed_ms": 1.5913,
+    "peak_memory_kb": 10.82,
+    "max_stack_depth": 250,
+    "nodes_visited": 500
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 1000,
+    "elapsed_ms": 2.3414,
+    "peak_memory_kb": 16.59,
+    "max_stack_depth": 10,
+    "nodes_visited": 1000
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 1000,
+    "elapsed_ms": 1.5076,
+    "peak_memory_kb": 21.35,
+    "max_stack_depth": 500,
+    "nodes_visited": 1000
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 2500,
+    "elapsed_ms": 6.2081,
+    "peak_memory_kb": 39.71,
+    "max_stack_depth": 12,
+    "nodes_visited": 2500
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 2500,
+    "elapsed_ms": 5.0247,
+    "peak_memory_kb": 50.66,
+    "max_stack_depth": 1250,
+    "nodes_visited": 2500
+  },
+  {
+    "algorithm": "DFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 5000,
+    "elapsed_ms": 10.6582,
+    "peak_memory_kb": 80.09,
+    "max_stack_depth": 13,
+    "nodes_visited": 5000
+  },
+  {
+    "algorithm": "BFS",
+    "graph_type": "Binary Tree",
+    "num_vertices": 5000,
+    "elapsed_ms": 10.2057,
+    "peak_memory_kb": 92.07,
+    "max_stack_depth": 2500,
+    "nodes_visited": 5000
+  }
+]

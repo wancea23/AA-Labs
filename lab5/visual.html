@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 7 — Greedy Algorithms: Prim & Kruskal</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #060a12;
+  --bg2:    #0b1120;
+  --bg3:    #111827;
+  --border: #1e3a5f;
+  --bd2:    #263d5a;
+  --cyan:   #22d3ee;
+  --green:  #4ade80;
+  --amber:  #fbbf24;
+  --red:    #f87171;
+  --text:   #e2e8f0;
+  --muted:  #64748b;
+  --dim:    #94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;line-height:1.6}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* HEADER */
+header{border-bottom:1px solid var(--border);padding:0 40px;background:linear-gradient(180deg,#060e1e,var(--bg));position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.12;pointer-events:none}
+.hdr{max-width:1200px;margin:0 auto;padding:30px 0 26px;position:relative}
+.lab-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);border:1px solid var(--cyan);padding:2px 10px;border-radius:2px;margin-bottom:10px;letter-spacing:.08em}
+header h1{font-size:38px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+header h1 span{color:var(--cyan)}
+.hdr-sub{color:var(--muted);font-size:13px;margin-top:6px;font-family:'JetBrains Mono',monospace}
+.hdr-pills{display:flex;gap:20px;margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);flex-wrap:wrap}
+.hdr-pills span{display:flex;align-items:center;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);display:inline-block}
+
+/* NAV */
+nav{background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;padding:0 40px}
+.nav-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;padding:13px 20px;border-bottom:2px solid transparent;transition:all .2s;letter-spacing:.05em}
+.nav-btn:hover{color:var(--text)}
+.nav-btn.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+/* SECTIONS */
+.section{display:none;max-width:1200px;margin:0 auto;padding:44px 40px}
+.section.active{display:block}
+.sec-title{font-size:26px;font-weight:700;margin-bottom:4px}
+.sec-title span{color:var(--cyan)}
+.sec-desc{color:var(--muted);font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:28px}
+
+/* BUTTONS */
+.btn{font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 18px;border-radius:4px;cursor:pointer;border:1px solid;transition:all .15s;font-weight:500;letter-spacing:.03em}
+.btn-c{background:#22d3ee1a;color:var(--cyan);border-color:var(--cyan)}
+.btn-c:hover{background:#22d3ee2a}
+.btn-d{background:var(--bg3);color:var(--dim);border-color:var(--border)}
+.btn-d:hover{color:var(--text);border-color:var(--bd2)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* VIZ CONTROLS */
+.vc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.step-badge{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:3px 10px;color:var(--dim)}
+.spd{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-left:auto}
+input[type=range]{-webkit-appearance:none;width:90px;height:3px;background:var(--border);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--cyan);cursor:pointer}
+
+/* CANVASES */
+.cv-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.cv-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.cv-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border)}
+.cv-title{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.05em}
+.cv-title.c{color:var(--cyan)}.cv-title.g{color:var(--green)}
+.mst-w{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.mst-w span{color:var(--amber);font-weight:700}
+canvas{display:block}
+
+/* LOGS */
+.log-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.log-panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.log-hdr{padding:9px 14px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.05em}
+.log-body{height:160px;overflow-y:auto;padding:6px 0}
+.le{font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 14px;border-left:2px solid transparent;line-height:1.4}
+.le.add{border-left-color:var(--green);color:var(--green)}
+.le.rej{border-left-color:var(--red);color:var(--red)}
+.le.cur{background:#22d3ee08}
+
+/* LEGEND */
+.legend-strip{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:14px 18px;display:flex;gap:28px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim)}
+.lline{width:22px;height:2.5px;border-radius:2px}
+.lnode{width:15px;height:15px;border-radius:50%;background:var(--bg2);flex-shrink:0}
+
+/* ANALYSIS */
+.ac{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.status{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.status.run{color:var(--amber)}.status.done{color:var(--green)}
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.chart-hdr{padding:13px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.chart-hdr h3{font-size:14px;font-weight:600}
+.lgnd{display:flex;gap:18px;font-family:'JetBrains Mono',monospace;font-size:11px}
+.lgnd-i{display:flex;align-items:center;gap:6px;color:var(--dim)}
+.lgnd-l{width:22px;height:2px;border-radius:1px}
+
+/* TABLE */
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px}
+th{background:var(--bg3);padding:9px 14px;text-align:left;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.05em}
+td{padding:8px 14px;border-bottom:1px solid var(--border);color:var(--dim)}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--text)}
+.tc{color:var(--cyan)!important}.tg{color:var(--green)!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr">
+    <div class="lab-tag">FCIM UTM · FAF-242 · ALGORITHMS</div>
+    <h1>Lab Work <span>#7</span> — Greedy Algorithms</h1>
+    <div class="hdr-sub">// Prim's &amp; Kruskal's Minimum Spanning Tree  ·  Python + Visual</div>
+    <div class="hdr-pills">
+      <span><span class="dot"></span>Prim O(V²) / O(E log V)</span>
+      <span><span class="dot" style="background:var(--green)"></span>Kruskal O(E log E)</span>
+      <span><span class="dot" style="background:var(--amber)"></span>Union-Find DSU</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="show('viz',this)">01 · VISUALIZER</button>
+    <button class="nav-btn" onclick="show('analysis',this)">02 · EMPIRICAL ANALYSIS</button>
+  </div>
+</nav>
+
+<!-- ══════════ VISUALIZER ══════════ -->
+<div id="viz" class="section active">
+  <div class="sec-title">Step-by-Step <span>Visualizer</span></div>
+  <div class="sec-desc">// Both algorithms running on the same graph simultaneously</div>
+
+  <div class="vc">
+    <button class="btn btn-c" id="btnPlay" onclick="play()">▶ Play</button>
+    <button class="btn btn-d" id="btnPause" onclick="pause()" disabled>⏸ Pause</button>
+    <button class="btn btn-d" onclick="step()">↠ Step</button>
+    <button class="btn btn-d" onclick="reset()">↺ Reset</button>
+    <button class="btn btn-d" onclick="newGraph()">🔀 New Graph</button>
+    <div class="step-badge" id="stepCtr">Step: 0 / 0</div>
+    <div class="spd">
+      SPEED
+      <input type="range" id="spd" min="100" max="2000" value="800" oninput="setSpeed(this.value)">
+      <span id="spdLbl">0.8s</span>
+    </div>
+  </div>
+
+  <div class="cv-row">
+    <div class="cv-wrap">
+      <div class="cv-hdr">
+        <span class="cv-title c">▸ PRIM'S  —  O(V²) naive</span>
+        <span class="mst-w">MST: <span id="pw">—</span></span>
+      </div>
+      <canvas id="pc" width="560" height="280" style="width:100%;height:auto"></canvas>
+    </div>
+    <div class="cv-wrap">
+      <div class="cv-hdr">
+        <span class="cv-title g">▸ KRUSKAL'S  —  O(E log E)</span>
+        <span class="mst-w">MST: <span id="kw">—</span></span>
+      </div>
+      <canvas id="kc" width="560" height="280" style="width:100%;height:auto"></canvas>
+    </div>
+  </div>
+
+  <div class="log-row">
+    <div class="log-panel">
+      <div class="log-hdr">// PRIM — STEP LOG</div>
+      <div class="log-body" id="plog"></div>
+    </div>
+    <div class="log-panel">
+      <div class="log-hdr">// KRUSKAL — STEP LOG</div>
+      <div class="log-body" id="klog"></div>
+    </div>
+  </div>
+
+  <div class="legend-strip">
+    <div class="li"><div class="lline" style="background:var(--cyan)"></div>Normal edge</div>
+    <div class="li"><div class="lline" style="background:var(--green)"></div>MST edge (added)</div>
+    <div class="li"><div class="lline" style="background:var(--amber)"></div>Current edge</div>
+    <div class="li"><div class="lline" style="background:var(--red);opacity:.6"></div>Rejected (cycle)</div>
+    <div class="li"><div class="lnode" style="border:2px solid var(--cyan)"></div>Visited node</div>
+    <div class="li"><div class="lnode" style="border:2px solid var(--border)"></div>Unvisited</div>
+  </div>
+</div>
+
+<!-- ══════════ ANALYSIS ══════════ -->
+<div id="analysis" class="section">
+  <div class="sec-title">Empirical <span>Analysis</span></div>
+  <div class="sec-desc">// Benchmarking both algorithms on randomly generated connected graphs</div>
+
+  <div class="ac">
+    <button class="btn btn-c" id="btnRun" onclick="runAnalysis()">▶ Run Benchmark</button>
+    <div class="status" id="aStatus">Click to benchmark Prim vs Kruskal across graph sizes</div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-hdr">
+      <h3>Execution Time vs. Number of Nodes (V)</h3>
+      <div class="lgnd">
+        <div class="lgnd-i"><div class="lgnd-l" style="background:var(--cyan)"></div>Prim's O(V²)</div>
+        <div class="lgnd-i"><div class="lgnd-l" style="background:var(--green)"></div>Kruskal's O(E log E)</div>
+      </div>
+    </div>
+    <canvas id="ac" width="1120" height="360" style="width:100%;height:auto;display:block"></canvas>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>NODES (V)</th><th>EDGES (E)</th><th>PRIM (ms)</th><th>KRUSKAL (ms)</th><th>FASTER</th><th>RATIO P/K</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Run benchmark to populate...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  GRAPH DATA
+// ═══════════════════════════════════════════════════
+const LBLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+let NODES = Array.from({length:8},(_,i)=>({id:i,label:LBLS[i]}));
+let EDGES = [
+  {u:0,v:1,w:4},{u:0,v:2,w:6},{u:1,v:2,w:6},{u:1,v:3,w:3},
+  {u:2,v:4,w:2},{u:3,v:4,w:4},{u:3,v:5,w:5},{u:4,v:5,w:7},
+  {u:4,v:6,w:5},{u:5,v:6,w:2},{u:5,v:7,w:6},{u:6,v:7,w:4}
+];
+
+function nodePos(n, W, H) {
+  const p=36;
+  if (n===8) return [
+    {x:p+10,y:H/2},{x:p+100,y:p+10},{x:p+100,y:H-p-10},{x:W/2-10,y:p+10},
+    {x:W/2-10,y:H-p-10},{x:W-p-100,y:p+10},{x:W-p-100,y:H-p-10},{x:W-p-10,y:H/2}
+  ];
+  const cx=W/2,cy=H/2,r=Math.min(W,H)/2-p;
+  return Array.from({length:n},(_,i)=>({
+    x:cx+r*Math.cos(2*Math.PI*i/n-Math.PI/2),
+    y:cy+r*Math.sin(2*Math.PI*i/n-Math.PI/2)
+  }));
+}
+
+// ═══════════════════════════════════════════════════
+//  PRIM'S — returns array of {u,v,w,added:true}
+// ═══════════════════════════════════════════════════
+function runPrim(n, edges) {
+  const adj = Array.from({length:n},()=>[]);
+  for (const {u,v,w} of edges) { adj[u].push({to:v,w}); adj[v].push({to:u,w}); }
+  const inMST=new Array(n).fill(false), key=new Array(n).fill(1/0), par=new Array(n).fill(-1);
+  key[0]=0;
+  const steps=[];
+  for (let i=0;i<n;i++) {
+    let u=-1;
+    for (let v=0;v<n;v++) if(!inMST[v]&&(u<0||key[v]<key[u])) u=v;
+    inMST[u]=true;
+    if (par[u]>=0) steps.push({u:par[u],v:u,w:key[u],added:true});
+    for (const {to,w} of adj[u]) if(!inMST[to]&&w<key[to]){key[to]=w;par[to]=u;}
+  }
+  return steps;
+}
+
+// ═══════════════════════════════════════════════════
+//  KRUSKAL'S — returns array of {u,v,w,added}
+// ═══════════════════════════════════════════════════
+function runKruskal(n, edges) {
+  const par=Array.from({length:n},(_,i)=>i), rnk=new Array(n).fill(0);
+  function find(x){return par[x]===x?x:(par[x]=find(par[x]));}
+  function union(x,y){const px=find(x),py=find(y);if(px===py)return false;
+    rnk[px]<rnk[py]?par[px]=py:rnk[px]>rnk[py]?par[py]=px:(par[py]=px,rnk[px]++);return true;}
+  const steps=[];
+  for (const {u,v,w} of [...edges].sort((a,b)=>a.w-b.w))
+    steps.push({u,v,w,added:union(u,v)});
+  return steps;
+}
+
+// ═══════════════════════════════════════════════════
+//  CANVAS DRAW
+// ═══════════════════════════════════════════════════
+function drawGraph(canvas, nodes, edges, mst, cur, rej, visited) {
+  const ctx=canvas.getContext('2d'), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0b1120'; ctx.fillRect(0,0,W,H);
+  const pos=nodePos(nodes.length,W,H);
+
+  for (const {u,v,w} of edges) {
+    const k=`${Math.min(u,v)}-${Math.max(u,v)}`;
+    const inMST=mst.has(k), isCur=cur&&Math.min(cur.u,cur.v)===Math.min(u,v)&&Math.max(cur.u,cur.v)===Math.max(u,v), isRej=rej.has(k);
+    ctx.beginPath(); ctx.moveTo(pos[u].x,pos[u].y); ctx.lineTo(pos[v].x,pos[v].y);
+    ctx.setLineDash([]);
+    ctx.shadowBlur=0;
+    if (isCur) { ctx.strokeStyle='#fbbf24'; ctx.lineWidth=3; }
+    else if (inMST) { ctx.strokeStyle='#4ade80'; ctx.lineWidth=2.5; ctx.shadowColor='#4ade80'; ctx.shadowBlur=7; }
+    else if (isRej) { ctx.strokeStyle='#f8717155'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]); }
+    else { ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=1.5; }
+    ctx.stroke(); ctx.shadowBlur=0; ctx.setLineDash([]);
+
+    // weight label
+    const mx=(pos[u].x+pos[v].x)/2, my=(pos[u].y+pos[v].y)/2;
+    const dx=pos[v].x-pos[u].x, dy=pos[v].y-pos[u].y, len=Math.hypot(dx,dy);
+    const nx=-dy/len*10, ny=dx/len*10;
+    ctx.fillStyle=inMST?'#4ade8022':'#0b112099';
+    ctx.fillRect(mx+nx-9,my+ny-8,18,14);
+    ctx.fillStyle=inMST?'#4ade80':isCur?'#fbbf24':'#64748b';
+    ctx.font='10px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(w,mx+nx,my+ny+1);
+  }
+
+  for (let i=0;i<nodes.length;i++) {
+    const {x,y}=pos[i], vis=visited.has(i), isCurN=cur&&(cur.u===i||cur.v===i);
+    ctx.beginPath(); ctx.arc(x,y,15,0,Math.PI*2);
+    ctx.fillStyle=vis?'#0e3a5a':'#0b1120'; ctx.fill();
+    ctx.strokeStyle=vis?'#22d3ee':isCurN?'#fbbf24':'#1e3a5f';
+    ctx.lineWidth=2;
+    if(vis){ctx.shadowColor='#22d3ee';ctx.shadowBlur=9;}
+    ctx.stroke(); ctx.shadowBlur=0;
+    ctx.fillStyle=vis?'#e2e8f0':'#475569';
+    ctx.font='bold 11px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(nodes[i].label,x,y);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  ANIMATION STATE
+// ═══════════════════════════════════════════════════
+let pSteps=[], kSteps=[], animStep=0, total=0, timer=null, playing=false, speed=800;
+
+function init() {
+  const n=NODES.length;
+  pSteps=runPrim(n,EDGES); kSteps=runKruskal(n,EDGES);
+  total=Math.max(pSteps.length,kSteps.length);
+  animStep=0;
+  document.getElementById('plog').innerHTML='';
+  document.getElementById('klog').innerHTML='';
+  document.getElementById('pw').textContent='—';
+  document.getElementById('kw').textContent='—';
+  updCtr();
+  render(-1);
+}
+
+function render(s) {
+  const n=NODES.length, pc=document.getElementById('pc'), kc=document.getElementById('kc');
+
+  // Prim state
+  const pm=new Set(), pr=new Set(), pv=new Set([0]); let pCur=null, pw=0;
+  for (let i=0;i<=s&&i<pSteps.length;i++) {
+    const st=pSteps[i], k=ekey(st);
+    if(i<s){pm.add(k);pv.add(st.u);pv.add(st.v);pw+=st.w;}
+    else{pCur=st;pv.add(st.u);}
+  }
+  if(s>=pSteps.length&&pSteps.length>0){
+    for(const st of pSteps){pm.add(ekey(st));pv.add(st.u);pv.add(st.v);}
+    pCur=null; pw=pSteps.reduce((a,x)=>a+x.w,0);
+    document.getElementById('pw').textContent=pw;
+  } else if(s>=0&&s<pSteps.length) {
+    document.getElementById('pw').textContent=`${pw} (+${pSteps[s].w})`;
+  }
+  drawGraph(pc,NODES,EDGES,pm,pCur,pr,pv);
+
+  // Kruskal state
+  const km=new Set(), kr=new Set(), kv=new Set(); let kCur=null, kw=0;
+  for (let i=0;i<=s&&i<kSteps.length;i++) {
+    const st=kSteps[i], k=ekey(st);
+    if(i<s){if(st.added){km.add(k);kv.add(st.u);kv.add(st.v);kw+=st.w;}else kr.add(k);}
+    else kCur=st;
+  }
+  if(s>=kSteps.length&&kSteps.length>0){
+    for(const st of kSteps){const k=ekey(st);if(st.added){km.add(k);kv.add(st.u);kv.add(st.v);}else kr.add(k);}
+    kCur=null; kw=kSteps.filter(x=>x.added).reduce((a,x)=>a+x.w,0);
+    document.getElementById('kw').textContent=kw;
+  } else if(s>=0&&s<kSteps.length) {
+    const st=kSteps[s], wSoFar=kSteps.slice(0,s).filter(x=>x.added).reduce((a,x)=>a+x.w,0);
+    document.getElementById('kw').textContent=st.added?`${wSoFar} (+${st.w})`:`${wSoFar} (skip)`;
+  }
+  drawGraph(kc,NODES,EDGES,km,kCur,kr,kv);
+  updLogs(s);
+}
+
+function ekey(e){return`${Math.min(e.u,e.v)}-${Math.max(e.u,e.v)}`;}
+
+function updLogs(s) {
+  const pl=document.getElementById('plog'), kl=document.getElementById('klog');
+  pl.innerHTML='';
+  for(let i=0;i<pSteps.length&&i<=s;i++){
+    const st=pSteps[i], d=document.createElement('div');
+    d.className='le add'+(i===s?' cur':'');
+    d.textContent=`Step ${i+1}: ${NODES[st.u].label}—${NODES[st.v].label}  w=${st.w}  ✓ ADDED`;
+    pl.appendChild(d);
+  }
+  pl.scrollTop=pl.scrollHeight;
+  kl.innerHTML='';
+  for(let i=0;i<kSteps.length&&i<=s;i++){
+    const st=kSteps[i], d=document.createElement('div');
+    d.className=(st.added?'le add':'le rej')+(i===s?' cur':'');
+    d.textContent=st.added?`Step ${i+1}: ${NODES[st.u].label}—${NODES[st.v].label}  w=${st.w}  ✓ ADDED`
+                          :`Step ${i+1}: ${NODES[st.u].label}—${NODES[st.v].label}  w=${st.w}  ✗ CYCLE`;
+    kl.appendChild(d);
+  }
+  kl.scrollTop=kl.scrollHeight;
+}
+
+function updCtr(){document.getElementById('stepCtr').textContent=`Step: ${animStep} / ${total}`;}
+
+function play(){
+  if(playing) return; playing=true;
+  document.getElementById('btnPlay').disabled=true;
+  document.getElementById('btnPause').disabled=false;
+  if(animStep>=total){animStep=0;init();}
+  timer=setInterval(()=>{
+    if(animStep<=total){render(animStep-1);animStep++;updCtr();}
+    else{pause();render(total);}
+  },speed);
+}
+function pause(){playing=false;clearInterval(timer);document.getElementById('btnPlay').disabled=false;document.getElementById('btnPause').disabled=true;}
+function step(){pause();if(animStep<=total){render(animStep-1);animStep++;updCtr();}}
+function reset(){pause();init();}
+function setSpeed(v){speed=+v;document.getElementById('spdLbl').textContent=(speed/1000).toFixed(1)+'s';if(playing){pause();play();}}
+function newGraph(){
+  pause();
+  const n=Math.floor(Math.random()*4)+6;
+  NODES=Array.from({length:n},(_,i)=>({id:i,label:LBLS[i]}));
+  const sh=[...Array(n).keys()].sort(()=>Math.random()-.5);
+  EDGES=[];
+  const es=new Set();
+  for(let i=1;i<n;i++){const u=sh[i],v=sh[Math.floor(Math.random()*i)],w=~~(Math.random()*15)+1;EDGES.push({u,v,w});es.add(`${Math.min(u,v)}-${Math.max(u,v)}`);}
+  for(let k=0;k<n;k++){const u=~~(Math.random()*n),v=~~(Math.random()*n),ek=`${Math.min(u,v)}-${Math.max(u,v)}`;if(u!==v&&!es.has(ek)){EDGES.push({u,v,w:~~(Math.random()*15)+1});es.add(ek);}}
+  init();
+}
+
+// ═══════════════════════════════════════════════════
+//  EMPIRICAL ANALYSIS
+// ═══════════════════════════════════════════════════
+function genGraph(n) {
+  const perm=[...Array(n).keys()].sort(()=>Math.random()-.5), edges=[], es=new Set();
+  for(let i=1;i<n;i++){const u=perm[i],v=perm[~~(Math.random()*i)],w=~~(Math.random()*99)+1;edges.push({u,v,w});es.add(`${Math.min(u,v)}-${Math.max(u,v)}`);}
+  for(let k=0;k<~~(n*1.5);k++){const u=~~(Math.random()*n),v=~~(Math.random()*n),ek=`${Math.min(u,v)}-${Math.max(u,v)}`;if(u!==v&&!es.has(ek)){edges.push({u,v,w:~~(Math.random()*99)+1});es.add(ek);}}
+  return {n,edges};
+}
+
+async function runAnalysis() {
+  document.getElementById('btnRun').disabled=true;
+  const sizes=[5,10,20,50,100,200,500,1000,2000], res=[];
+  for(let si=0;si<sizes.length;si++){
+    const n=sizes[si];
+    document.getElementById('aStatus').className='status run';
+    document.getElementById('aStatus').textContent=`Running... V=${n} (${si+1}/${sizes.length})`;
+    await new Promise(r=>setTimeout(r,0));
+    const {edges}=genGraph(n); const R=n<=200?20:5;
+    let pt=0,kt=0;
+    for(let r=0;r<R;r++){
+      let t=performance.now();runPrim(n,edges);pt+=performance.now()-t;
+      t=performance.now();runKruskal(n,edges);kt+=performance.now()-t;
+    }
+    res.push({n,e:edges.length,p:pt/R,k:kt/R});
+    await new Promise(r=>setTimeout(r,0));
+  }
+  document.getElementById('aStatus').className='status done';
+  document.getElementById('aStatus').textContent='✓ Done — results below';
+  document.getElementById('btnRun').disabled=false;
+  drawChart(res); fillTable(res);
+}
+
+function drawChart(data) {
+  const cv=document.getElementById('ac'), ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height, PAD={t:50,r:50,b:65,l:88};
+  const CW=W-PAD.l-PAD.r, CH=H-PAD.t-PAD.b;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle='#0b1120'; ctx.fillRect(0,0,W,H);
+  const mx=Math.max(...data.map(r=>Math.max(r.p,r.k)));
+
+  // grid
+  ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const y=PAD.t+CH*(1-i/5);
+    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(PAD.l+CW,y);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.font='11px JetBrains Mono';ctx.textAlign='right';ctx.textBaseline='middle';
+    ctx.fillText((mx*i/5).toFixed(3)+'ms',PAD.l-8,y);
+  }
+  data.forEach(({n},i)=>{
+    const x=PAD.l+CW*i/(data.length-1);
+    ctx.beginPath();ctx.moveTo(x,PAD.t);ctx.lineTo(x,PAD.t+CH);ctx.strokeStyle='#1e3a5f44';ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.font='11px JetBrains Mono';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText(n,x,PAD.t+CH+10);
+  });
+  ctx.fillStyle='#94a3b8';ctx.font='13px JetBrains Mono';ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText('Number of Nodes (V)',PAD.l+CW/2,H-4);
+  ctx.save();ctx.translate(14,PAD.t+CH/2);ctx.rotate(-Math.PI/2);ctx.textBaseline='middle';ctx.fillText('Time (ms)',0,0);ctx.restore();
+
+  function line(key,color){
+    const pts=data.map(({p,k},i)=>({x:PAD.l+CW*i/(data.length-1),y:PAD.t+CH*(1-(key==='p'?p:k)/mx)}));
+    ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+    ctx.lineTo(pts[pts.length-1].x,PAD.t+CH);ctx.lineTo(pts[0].x,PAD.t+CH);ctx.closePath();
+    ctx.fillStyle=color+'18';ctx.fill();
+    ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.shadowColor=color;ctx.shadowBlur=5;ctx.stroke();ctx.shadowBlur=0;
+    pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#0b1120';ctx.lineWidth=1.5;ctx.stroke();});
+  }
+  line('p','#22d3ee'); line('k','#4ade80');
+
+  [[8,"#22d3ee","Prim's O(V²)"],[130,"#4ade80","Kruskal's O(E log E)"]].forEach(([ox,c,t])=>{
+    ctx.fillStyle=c;ctx.fillRect(PAD.l+ox,18,22,3);ctx.beginPath();ctx.arc(PAD.l+ox+11,19.5,4,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();
+    ctx.fillStyle='#e2e8f0';ctx.font='12px JetBrains Mono';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(t,PAD.l+ox+28,19);
+  });
+}
+
+function fillTable(data) {
+  const tb=document.getElementById('tbody'); tb.innerHTML='';
+  for(const {n,e,p,k} of data){
+    const f=p<k?'Prim':'Kruskal', tr=document.createElement('tr');
+    tr.innerHTML=`<td>${n}</td><td>${e}</td><td class="tc">${p.toFixed(4)}</td><td class="tg">${k.toFixed(4)}</td><td style="color:${p<k?'var(--cyan)':'var(--green)'}">${f}</td><td style="color:var(--dim)">${(p/k).toFixed(2)}x</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  NAV + INIT
+// ═══════════════════════════════════════════════════
+function show(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
