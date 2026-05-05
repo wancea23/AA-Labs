@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 5 — Dijkstra & Floyd-Warshall</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #06090f;
+  --surface:  #0b1120;
+  --panel:    #0f1829;
+  --border:   #162236;
+  --dijk:     #00c896;
+  --dijk-dim: #003d2e;
+  --fw:       #f4a261;
+  --fw-dim:   #4a2800;
+  --blue:     #4a9eff;
+  --muted:    #3a5570;
+  --text:     #cde4ff;
+  --text-dim: #4a6a8a;
+  --settled:  #1a4d3a;
+  --inqueue:  #2a3a10;
+  --radius:   10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,200,150,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,150,0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,200,150,0.06) 0%, transparent 70%);
+}
+
+header {
+  position: relative; z-index: 10;
+  padding: 56px 40px 36px;
+  border-bottom: 1px solid var(--border);
+}
+.lab-tag {
+  display: inline-block;
+  background: rgba(0,200,150,0.08);
+  border: 1px solid rgba(0,200,150,0.25);
+  color: var(--dijk);
+  padding: 3px 14px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+header h1 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(22px, 4vw, 46px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+}
+.h1-dijk { color: var(--dijk); }
+.h1-sep  { color: var(--muted); margin: 0 10px; font-weight: 400; }
+.h1-fw   { color: var(--fw); }
+.h1-sub  { color: var(--text-dim); font-size: 11px; letter-spacing: 2px; margin-top: 10px; }
+
+main {
+  position: relative; z-index: 10;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+section { margin-bottom: 60px; }
+.sec-label {
+  font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--text-dim); margin-bottom: 6px;
+}
+.sec-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 22px; color: var(--text);
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) {
+  .two-col, .three-col { grid-template-columns: 1fr; }
+}
+
+.algo-badge { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.badge {
+  padding: 3px 12px; border-radius: 999px;
+  font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+}
+.badge-dijk { background: rgba(0,200,150,0.1); color: var(--dijk); border: 1px solid var(--dijk-dim); }
+.badge-fw   { background: rgba(244,162,97,0.1); color: var(--fw);   border: 1px solid var(--fw-dim);   }
+
+.graph-wrap {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 280px;
+}
+.graph-wrap canvas { display: block; width: 100%; height: 100%; }
+.step-ctr {
+  position: absolute; top: 8px; right: 10px;
+  font-size: 10px; color: var(--text-dim);
+}
+
+.controls {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 14px 0;
+}
+.btn {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 16px; border-radius: 6px; cursor: pointer;
+  font-family: 'Fira Code', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; transition: all .15s;
+}
+.btn:hover { border-color: var(--dijk); color: var(--dijk); }
+.btn-play-dijk { background: rgba(0,200,150,0.08); border-color: var(--dijk); color: var(--dijk); }
+.btn-play-fw   { background: rgba(244,162,97,0.08); border-color: var(--fw);   color: var(--fw);   }
+.btn-reset     { background: rgba(74,158,255,0.08); border-color: var(--blue); color: var(--blue); }
+.speed-wrap { display: flex; align-items: center; gap: 8px; }
+.speed-wrap label { color: var(--text-dim); font-size: 10px; }
+input[type=range] {
+  -webkit-appearance: none; width: 100px; height: 3px;
+  background: var(--border); border-radius: 2px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px;
+  background: var(--dijk); border-radius: 50%; cursor: pointer;
+}
+select {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 5px 10px; border-radius: 6px;
+  font-family: 'Fira Code', monospace; font-size: 10px; cursor: pointer; outline: none;
+}
+
+.info-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.chip {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 12px; font-size: 10px; color: var(--text-dim);
+  display: flex; gap: 6px; align-items: center;
+}
+.chip span { font-weight: 600; }
+.chip-dijk span { color: var(--dijk); }
+.chip-fw   span { color: var(--fw);   }
+
+.dist-table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: auto; max-height: 280px;
+}
+.dist-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+}
+.dist-table th {
+  padding: 6px 10px; border-bottom: 1px solid var(--border);
+  color: var(--text-dim); font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; text-align: left; font-weight: 400;
+  position: sticky; top: 0; background: var(--surface);
+}
+.dist-table td {
+  padding: 6px 10px; border-bottom: 1px solid rgba(22,34,54,0.5);
+  font-size: 11px;
+}
+.dist-table tr:last-child td { border-bottom: none; }
+.td-settled  { color: var(--dijk); font-weight: 600; }
+.td-inqueue  { color: var(--fw); }
+.td-unseen   { color: var(--muted); }
+
+.pq-wrap {
+  margin-top: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px; min-height: 52px;
+}
+.pq-label { font-size: 9px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+.pq-items { display: flex; gap: 6px; flex-wrap: wrap; }
+.pq-item {
+  background: rgba(0,200,150,0.08); border: 1px solid var(--dijk-dim);
+  color: var(--dijk); border-radius: 4px; padding: 3px 8px;
+  font-size: 10px; font-weight: 600;
+  animation: pop .2s ease;
+}
+@keyframes pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.matrix-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: auto; padding: 12px;
+}
+.matrix-grid {
+  display: inline-grid;
+  gap: 2px;
+}
+.matrix-cell {
+  width: 34px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 3px; font-size: 10px; font-weight: 600;
+  transition: background .2s, color .2s;
+  border: 1px solid transparent;
+}
+.cell-default  { background: rgba(255,255,255,0.03); color: var(--text-dim); }
+.cell-diag     { background: rgba(0,200,150,0.05); color: var(--dijk); }
+.cell-k-row    { background: rgba(244,162,97,0.1); border-color: rgba(244,162,97,0.2); color: var(--fw); }
+.cell-k-col    { background: rgba(244,162,97,0.1); border-color: rgba(244,162,97,0.2); color: var(--fw); }
+.cell-updated  { background: rgba(0,200,150,0.2); border-color: var(--dijk); color: var(--dijk); }
+.cell-inf      { color: var(--muted); }
+.cell-header   { background: transparent; color: var(--text-dim); font-size: 9px; }
+
+.fw-status {
+  margin-top: 10px; padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 11px; line-height: 1.7;
+}
+.fw-k  { color: var(--fw); font-weight: 600; }
+.fw-ij { color: var(--dijk); font-weight: 600; }
+
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+@media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+.chart-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+}
+.chart-card h3 { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+.chart-card p  { font-size: 10px; color: var(--text-dim); margin-bottom: 14px; }
+canvas.chart   { max-height: 200px; }
+
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.tab {
+  padding: 4px 14px; border-radius: 999px; font-size: 10px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-dim); transition: all .15s; letter-spacing: .5px;
+}
+.tab.active, .tab:hover {
+  background: rgba(0,200,150,0.08); border-color: var(--dijk); color: var(--dijk);
+}
+
+.metrics-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.metrics-table th {
+  text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border);
+  color: var(--text-dim); font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; font-weight: 400;
+}
+.metrics-table td { padding: 8px 12px; border-bottom: 1px solid rgba(22,34,54,0.5); }
+.metrics-table tr:last-child td { border-bottom: none; }
+.metrics-table tr:hover td { background: rgba(255,255,255,0.015); }
+.td-dijk { color: var(--dijk); font-weight: 600; }
+.td-fw   { color: var(--fw);   font-weight: 600; }
+.win     { color: #ffd166; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.legend { display: flex; gap: 16px; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="lab-tag">Laboratory № 5 · Dynamic Programming</div>
+  <h1>
+    <span class="h1-dijk">Dijkstra</span>
+    <span class="h1-sep">/</span>
+    <span class="h1-fw">Floyd-Warshall</span>
+  </h1>
+  <p class="h1-sub">Shortest Path Algorithms · Empirical Analysis · 2025</p>
+</header>
+
+<main>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 1 — DIJKSTRA VISUALIZATION            -->
+<!-- ══════════════════════════════════════════════ -->
+<section id="dijk-viz">
+  <div class="sec-label">Section 01</div>
+  <div class="sec-title">Dijkstra — Interactive Step-by-Step</div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="color:var(--text-dim);font-size:10px;">GRAPH:</label>
+      <select id="dijkGraphType" onchange="dijkRebuild()">
+        <option value="sparse">Sparse</option>
+        <option value="dense">Dense</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="color:var(--text-dim);font-size:10px;">NODES:</label>
+      <select id="dijkN" onchange="dijkRebuild()">
+        <option value="8">8</option>
+        <option value="10" selected>10</option>
+        <option value="12">12</option>
+        <option value="14">14</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="color:var(--text-dim);font-size:10px;">SOURCE:</label>
+      <select id="dijkSrc" onchange="dijkRebuild()">
+        <option value="0">0</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="algo-badge">
+        <div class="badge badge-dijk">Dijkstra</div>
+        <span style="color:var(--text-dim);font-size:10px;">Min-heap priority queue</span>
+      </div>
+      <div class="graph-wrap">
+        <canvas id="dijkCanvas"></canvas>
+        <div class="step-ctr" id="dijkCtr">step 0 / 0</div>
+      </div>
+      <div class="legend" style="margin-top:10px;">
+        <div class="legend-item"><div class="leg-dot" style="background:var(--dijk)"></div>Settled</div>
+        <div class="legend-item"><div class="leg-dot" style="background:var(--fw)"></div>In Queue</div>
+        <div class="legend-item"><div class="leg-dot" style="background:var(--muted)"></div>Unseen</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="pq-label">PRIORITY QUEUE (dist, node)</div>
+      <div class="pq-wrap" id="dijkPQ">
+        <div class="pq-items" id="dijkPQItems"></div>
+      </div>
+      <div style="margin-top:14px;margin-bottom:8px;font-size:9px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;">DISTANCES FROM SOURCE</div>
+      <div class="dist-table-wrap">
+        <table class="dist-table">
+          <thead><tr><th>Node</th><th>Distance</th><th>Status</th></tr></thead>
+          <tbody id="dijkDistBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-play-dijk" id="dijkBtnPlay" onclick="dijkTogglePlay()">▶ PLAY</button>
+    <button class="btn" onclick="dijkStep()">⊳ STEP</button>
+    <button class="btn btn-reset" onclick="dijkReset()">↺ RESET</button>
+    <div class="speed-wrap">
+      <label>SPEED</label>
+      <input type="range" id="dijkSpeed" min="50" max="900" value="500"
+             oninput="dijkSpeedMs = 1000 - +this.value">
+      <span id="dijkSpeedLbl" style="color:var(--text-dim);font-size:10px;">×1</span>
+    </div>
+  </div>
+
+  <div class="info-strip">
+    <div class="chip chip-dijk">Settled <span id="dijkSettled">0</span></div>
+    <div class="chip chip-dijk">In Queue <span id="dijkInQueue">0</span></div>
+    <div class="chip chip-dijk">Current Node <span id="dijkCurNode">—</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 2 — FLOYD-WARSHALL VISUALIZATION      -->
+<!-- ══════════════════════════════════════════════ -->
+<section id="fw-viz">
+  <div class="sec-label">Section 02</div>
+  <div class="sec-title">Floyd-Warshall — Distance Matrix Evolution</div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="color:var(--text-dim);font-size:10px;">GRAPH:</label>
+      <select id="fwGraphType" onchange="fwRebuild()">
+        <option value="sparse">Sparse</option>
+        <option value="dense">Dense</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label style="color:var(--text-dim);font-size:10px;">NODES:</label>
+      <select id="fwN" onchange="fwRebuild()">
+        <option value="6">6</option>
+        <option value="7" selected>7</option>
+        <option value="8">8</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="algo-badge">
+        <div class="badge badge-fw">Floyd-Warshall</div>
+        <span style="color:var(--text-dim);font-size:10px;">All-pairs shortest paths · O(V³)</span>
+      </div>
+      <div class="graph-wrap">
+        <canvas id="fwCanvas"></canvas>
+        <div class="step-ctr" id="fwCtr">k = 0 / 0</div>
+      </div>
+      <div class="fw-status" id="fwStatus">
+        Waiting to start…
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px;">
+        DISTANCE MATRIX — dist[i][j]
+      </div>
+      <div class="matrix-wrap">
+        <div class="matrix-grid" id="fwMatrix"></div>
+      </div>
+      <div class="legend" style="margin-top:12px;">
+        <div class="legend-item"><div class="leg-dot" style="background:var(--fw);border-radius:2px;width:12px;height:12px;"></div>k row/col</div>
+        <div class="legend-item"><div class="leg-dot" style="background:var(--dijk);border-radius:2px;width:12px;height:12px;"></div>Updated cell</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-play-fw" id="fwBtnPlay" onclick="fwTogglePlay()">▶ PLAY</button>
+    <button class="btn" onclick="fwStep()">⊳ STEP</button>
+    <button class="btn btn-reset" onclick="fwReset()">↺ RESET</button>
+    <div class="speed-wrap">
+      <label>SPEED</label>
+      <input type="range" id="fwSpeed" min="50" max="900" value="400"
+             oninput="fwSpeedMs = 1000 - +this.value">
+      <span id="fwSpeedLbl" style="color:var(--text-dim);font-size:10px;">×1.7</span>
+    </div>
+  </div>
+
+  <div class="info-strip">
+    <div class="chip chip-fw">Iteration k <span id="fwK">—</span></div>
+    <div class="chip chip-fw">Updates this k <span id="fwUpdates">0</span></div>
+    <div class="chip chip-fw">Total Updates <span id="fwTotalUpdates">0</span></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 3 — EMPIRICAL CHARTS                  -->
+<!-- ══════════════════════════════════════════════ -->
+<section id="charts">
+  <div class="sec-label">Section 03</div>
+  <div class="sec-title">Empirical Performance Analysis</div>
+
+  <div class="filter-row" id="filterTabs">
+    <div class="tab active" onclick="filterCharts('all',this)">All</div>
+    <div class="tab" onclick="filterCharts('Sparse',this)">Sparse</div>
+    <div class="tab" onclick="filterCharts('Dense',this)">Dense</div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Execution Time (ms) vs N</h3>
+      <p>Averaged over 5 runs · log scale</p>
+      <canvas id="chartTime" class="chart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Peak Memory (KB) vs N</h3>
+      <p>Measured with Python tracemalloc</p>
+      <canvas id="chartMem" class="chart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Dijkstra — Time Complexity</h3>
+      <p>O((V + E) log V) · heap-based</p>
+      <canvas id="chartDijkOnly" class="chart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Floyd-Warshall — Time Complexity</h3>
+      <p>O(V³) · all-pairs DP matrix</p>
+      <canvas id="chartFWOnly" class="chart"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SECTION 4 — METRICS TABLE                     -->
+<!-- ══════════════════════════════════════════════ -->
+<section id="table">
+  <div class="sec-label">Section 04</div>
+  <div class="sec-title">Raw Measurement Data</div>
+  <div class="card" style="overflow-x:auto;">
+    <table class="metrics-table">
+      <thead>
+        <tr>
+          <th>Algorithm</th><th>Graph</th><th>N</th>
+          <th>Time (ms)</th><th>Memory (KB)</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<script>
+const INF = 1e9;
+
+const RAW_DATA = [{"algorithm":"Dijkstra","graph_type":"Sparse","num_vertices":10,"elapsed_ms":0.0399,"peak_memory_kb":0.21},{"algorithm":"Floyd-Warshall","graph_type":"Sparse","num_vertices":10,"elapsed_ms":0.1715,"peak_memory_kb":1.18},{"algorithm":"Dijkstra","graph_type":"Sparse","num_vertices":25,"elapsed_ms":0.042,"peak_memory_kb":0.37},{"algorithm":"Floyd-Warshall","graph_type":"Sparse","num_vertices":25,"elapsed_ms":0.9577,"peak_memory_kb":5.49},{"algorithm":"Dijkstra","graph_type":"Sparse","num_vertices":50,"elapsed_ms":0.0683,"peak_memory_kb":0.62},{"algorithm":"Floyd-Warshall","graph_type":"Sparse","num_vertices":50,"elapsed_ms":5.9184,"peak_memory_kb":20.41},{"algorithm":"Dijkstra","graph_type":"Sparse","num_vertices":100,"elapsed_ms":0.1246,"peak_memory_kb":1.08},{"algorithm":"Floyd-Warshall","graph_type":"Sparse","num_vertices":100,"elapsed_ms":39.7995,"peak_memory_kb":80.69},{"algorithm":"Dijkstra","graph_type":"Sparse","num_vertices":250,"elapsed_ms":0.3178,"peak_memory_kb":2.84},{"algorithm":"Floyd-Warshall","graph_type":"Sparse","num_vertices":250,"elapsed_ms":461.7585,"peak_memory_kb":500.0},{"algorithm":"Dijkstra","graph_type":"Sparse","num_vertices":500,"elapsed_ms":0.6766,"peak_memory_kb":5.52},{"algorithm":"Floyd-Warshall","graph_type":"Sparse","num_vertices":500,"elapsed_ms":15116.4769,"peak_memory_kb":1988.55},{"algorithm":"Dijkstra","graph_type":"Sparse","num_vertices":1000,"elapsed_ms":1.374,"peak_memory_kb":10.98},{"algorithm":"Dijkstra","graph_type":"Dense","num_vertices":10,"elapsed_ms":0.019,"peak_memory_kb":0.19},{"algorithm":"Floyd-Warshall","graph_type":"Dense","num_vertices":10,"elapsed_ms":0.2006,"peak_memory_kb":1.07},{"algorithm":"Dijkstra","graph_type":"Dense","num_vertices":25,"elapsed_ms":0.0685,"peak_memory_kb":0.65},{"algorithm":"Floyd-Warshall","graph_type":"Dense","num_vertices":25,"elapsed_ms":1.5069,"peak_memory_kb":5.3},{"algorithm":"Dijkstra","graph_type":"Dense","num_vertices":50,"elapsed_ms":0.1453,"peak_memory_kb":1.28},{"algorithm":"Floyd-Warshall","graph_type":"Dense","num_vertices":50,"elapsed_ms":8.8161,"peak_memory_kb":20.25},{"algorithm":"Dijkstra","graph_type":"Dense","num_vertices":100,"elapsed_ms":0.4206,"peak_memory_kb":2.92},{"algorithm":"Floyd-Warshall","graph_type":"Dense","num_vertices":100,"elapsed_ms":59.0623,"peak_memory_kb":80.69},{"algorithm":"Dijkstra","graph_type":"Dense","num_vertices":200,"elapsed_ms":1.8083,"peak_memory_kb":6.23},{"algorithm":"Floyd-Warshall","graph_type":"Dense","num_vertices":200,"elapsed_ms":429.5466,"peak_memory_kb":320.92},{"algorithm":"Dijkstra","graph_type":"Dense","num_vertices":300,"elapsed_ms":3.0241,"peak_memory_kb":9.13},{"algorithm":"Floyd-Warshall","graph_type":"Dense","num_vertices":300,"elapsed_ms":3183.1251,"peak_memory_kb":717.98},{"algorithm":"Dijkstra","graph_type":"Dense","num_vertices":400,"elapsed_ms":6.2998,"peak_memory_kb":12.89},{"algorithm":"Floyd-Warshall","graph_type":"Dense","num_vertices":400,"elapsed_ms":13850.3073,"peak_memory_kb":1271.05}];
+
+/* ─── SEEDED RNG ─── */
+function seededRNG(seed) {
+  let s = seed;
+  return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+}
+
+/* ─── GRAPH BUILDER ─── */
+function buildWeightedGraph(type, n) {
+  const adj = Array.from({length: n}, () => []);
+  const edgeSet = new Set();
+  const add = (u, v, w) => {
+    const key = u < v ? `${u},${v}` : `${v},${u}`;
+    if (edgeSet.has(key)) return;
+    edgeSet.add(key);
+    adj[u].push({to: v, w});
+    adj[v].push({to: u, w});
+  };
+  const rng = seededRNG(42);
+  if (type === 'sparse') {
+    const nodes = [...Array(n).keys()];
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [nodes[i], nodes[j]] = [nodes[j], nodes[i]];
+    }
+    for (let i = 1; i < n; i++) {
+      const j = Math.floor(rng() * i);
+      add(nodes[i], nodes[j], Math.floor(rng() * 19) + 1);
+    }
+    const extras = Math.floor(n * 0.5);
+    for (let k = 0; k < extras; k++) {
+      const u = Math.floor(rng() * n), v = Math.floor(rng() * n);
+      if (u !== v) add(u, v, Math.floor(rng() * 19) + 1);
+    }
+  } else {
+    for (let u = 0; u < n; u++) {
+      for (let v = u + 1; v < n; v++) {
+        if (rng() < 0.6) add(u, v, Math.floor(rng() * 19) + 1);
+      }
+    }
+  }
+  return adj;
+}
+
+function toMatrix(adj, n) {
+  const d = Array.from({length: n}, (_, i) => Array.from({length: n}, (__, j) => i === j ? 0 : INF));
+  for (let u = 0; u < n; u++) {
+    for (const {to, w} of adj[u]) {
+      if (w < d[u][to]) { d[u][to] = w; d[to][u] = w; }
+    }
+  }
+  return d;
+}
+
+/* ─── LAYOUT ─── */
+function circleLayout(n, w, h) {
+  const pos = [];
+  const r = Math.min(w, h) / 2 - 36;
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    pos.push({ x: w / 2 + Math.cos(angle) * r, y: h / 2 + Math.sin(angle) * r });
+  }
+  return pos;
+}
+
+/* ─── DIJKSTRA STEP BUILDER ─── */
+function buildDijkSteps(adj, n, src) {
+  const steps = [];
+  const dist = new Array(n).fill(INF);
+  const settled = new Array(n).fill(false);
+  const inQueue = new Array(n).fill(false);
+  dist[src] = 0;
+  // Min-heap via sorted array for simplicity at small n
+  let heap = [[0, src]];
+  inQueue[src] = true;
+
+  while (heap.length) {
+    heap.sort((a, b) => a[0] - b[0]);
+    const [d, u] = heap.shift();
+    if (settled[u]) continue;
+    settled[u] = true;
+    inQueue[u] = false;
+
+    const relaxed = [];
+    for (const {to, w} of adj[u]) {
+      if (!settled[to]) {
+        const nd = dist[u] + w;
+        if (nd < dist[to]) {
+          dist[to] = nd;
+          if (!inQueue[to]) inQueue[to] = true;
+          heap.push([nd, to]);
+          relaxed.push({from: u, to, w, newDist: nd});
+        }
+      }
+    }
+
+    steps.push({
+      current: u,
+      dist: [...dist],
+      settled: [...settled],
+      inQueue: [...inQueue],
+      heap: heap.map(([d, v]) => [d, v]),
+      relaxed,
+    });
+  }
+  return steps;
+}
+
+/* ─── FLOYD-WARSHALL STEP BUILDER ─── */
+function buildFWSteps(adj, n) {
+  const steps = [];
+  const dist = toMatrix(adj, n);
+
+  steps.push({
+    k: -1, i: -1, j: -1,
+    mat: dist.map(r => [...r]),
+    updates: [],
+    label: 'Initial distance matrix (direct edges only)'
+  });
+
+  for (let k = 0; k < n; k++) {
+    const updatesThisK = [];
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        if (dist[i][k] < INF && dist[k][j] < INF) {
+          const nd = dist[i][k] + dist[k][j];
+          if (nd < dist[i][j]) {
+            dist[i][j] = nd;
+            updatesThisK.push({i, j, val: nd});
+          }
+        }
+      }
+    }
+    steps.push({
+      k, i: -1, j: -1,
+      mat: dist.map(r => [...r]),
+      updates: updatesThisK,
+      label: `After k=${k}: ${updatesThisK.length} cell(s) improved via vertex ${k}`
+    });
+  }
+  return steps;
+}
+
+/* ─── CANVAS DRAWING — DIJKSTRA ─── */
+const C = {
+  bg: '#0b1120', border: '#162236',
+  dijk: '#00c896', fw: '#f4a261',
+  muted: '#3a5570', text: '#cde4ff',
+  settled: '#003d2e', inqueue: '#2a3500', edge: 'rgba(22,34,54,0.9)'
+};
+
+function drawDijkGraph(canvas, adj, pos, step, src) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, W, H);
+  const n = pos.length;
+
+  // edges
+  for (let u = 0; u < n; u++) {
+    for (const {to, w} of adj[u]) {
+      if (to > u) {
+        const isRelaxed = step && step.relaxed && step.relaxed.some(r => (r.from === u && r.to === to) || (r.from === to && r.to === u));
+        const bothSettled = step && step.settled[u] && step.settled[to];
+        ctx.beginPath();
+        ctx.moveTo(pos[u].x, pos[u].y);
+        ctx.lineTo(pos[to].x, pos[to].y);
+        ctx.strokeStyle = isRelaxed ? C.dijk : (bothSettled ? 'rgba(0,200,150,0.2)' : C.edge);
+        ctx.lineWidth = isRelaxed ? 2.5 : 1.2;
+        ctx.stroke();
+        // weight label
+        const mx = (pos[u].x + pos[to].x) / 2;
+        const my = (pos[u].y + pos[to].y) / 2;
+        ctx.fillStyle = isRelaxed ? C.dijk : C.muted;
+        ctx.font = `${Math.min(10, 18/Math.sqrt(n))}px Fira Code`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(w, mx, my);
+      }
+    }
+  }
+
+  // nodes
+  for (let i = 0; i < n; i++) {
+    const {x, y} = pos[i];
+    const r = Math.max(14, 22 - n);
+    const isCurrent  = step && step.current === i;
+    const isSettled  = step && step.settled[i];
+    const isInQueue  = step && step.inQueue[i];
+    const isSource   = i === src;
+
+    if (isCurrent) {
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, r * 2.5);
+      grd.addColorStop(0, 'rgba(0,200,150,0.4)');
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(x, y, r * 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = isCurrent ? C.dijk : isSettled ? C.settled : isInQueue ? C.inqueue : '#0f1829';
+    ctx.fill();
+    ctx.strokeStyle = isCurrent ? C.dijk : isSettled ? 'rgba(0,200,150,0.5)' : isInQueue ? 'rgba(244,162,97,0.5)' : C.border;
+    ctx.lineWidth = isCurrent ? 2.5 : isSource ? 2 : 1.5;
+    ctx.stroke();
+
+    const distVal = step ? (step.dist[i] === INF ? '∞' : step.dist[i]) : (i === src ? 0 : '∞');
+    ctx.fillStyle = isCurrent ? '#000' : isSettled ? C.dijk : isInQueue ? C.fw : C.muted;
+    ctx.font = `bold ${Math.min(10, 18/Math.sqrt(n))}px Fira Code`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(`${i}`, x, y - 3);
+    ctx.font = `${Math.min(8, 14/Math.sqrt(n))}px Fira Code`;
+    ctx.fillText(distVal, x, y + 5);
+  }
+}
+
+/* ─── CANVAS DRAWING — FLOYD-WARSHALL ─── */
+function drawFWGraph(canvas, adj, pos, step, n) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+
+  const mat = step ? step.mat : null;
+
+  for (let u = 0; u < n; u++) {
+    for (const {to, w} of adj[u]) {
+      if (to > u) {
+        ctx.beginPath();
+        ctx.moveTo(pos[u].x, pos[u].y);
+        ctx.lineTo(pos[to].x, pos[to].y);
+        ctx.strokeStyle = C.edge;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        const mx = (pos[u].x + pos[to].x) / 2;
+        const my = (pos[u].y + pos[to].y) / 2;
+        ctx.fillStyle = C.muted;
+        ctx.font = '9px Fira Code';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(w, mx, my);
+      }
+    }
+  }
+
+  const k = step ? step.k : -1;
+  for (let i = 0; i < n; i++) {
+    const {x, y} = pos[i];
+    const r = Math.max(14, 24 - n);
+    const isK = i === k;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = isK ? 'rgba(244,162,97,0.15)' : '#0f1829';
+    ctx.fill();
+    ctx.strokeStyle = isK ? C.fw : C.border;
+    ctx.lineWidth = isK ? 2.5 : 1.5;
+    ctx.stroke();
+    ctx.fillStyle = isK ? C.fw : C.muted;
+    ctx.font = `bold ${Math.min(11, 20 - n)}px Fira Code`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(i, x, y);
+  }
+}
+
+/* ─── MATRIX RENDERER ─── */
+function renderMatrix(containerId, mat, n, step) {
+  const el = document.getElementById(containerId);
+  el.style.gridTemplateColumns = `24px ${'34px '.repeat(n)}`;
+  const k = step ? step.k : -1;
+  const updatedCells = new Set(step && step.updates ? step.updates.map(u => `${u.i},${u.j}`) : []);
+
+  let html = `<div class="matrix-cell cell-header"></div>`;
+  for (let j = 0; j < n; j++) html += `<div class="matrix-cell cell-header">${j}</div>`;
+  for (let i = 0; i < n; i++) {
+    html += `<div class="matrix-cell cell-header">${i}</div>`;
+    for (let j = 0; j < n; j++) {
+      const val = mat[i][j];
+      const isUpdated = updatedCells.has(`${i},${j}`);
+      const isKRow = i === k;
+      const isKCol = j === k;
+      const isDiag  = i === j;
+      let cls = 'cell-default';
+      if (isDiag)          cls = 'cell-diag';
+      else if (isUpdated)  cls = 'cell-updated';
+      else if (isKRow || isKCol) cls = 'cell-k-row';
+      const disp = val >= INF ? '∞' : val;
+      const infCls = val >= INF ? ' cell-inf' : '';
+      html += `<div class="matrix-cell ${cls}${infCls}">${disp}</div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════
+   DIJKSTRA STATE
+   FIX: renamed step counter var to dijkStepIdx
+        to avoid collision with dijkStep() function
+═══════════════════════════════════════════════ */
+let dijkAdj, dijkPos, dijkSteps, dijkStepIdx = 0, dijkSrc = 0;
+let dijkPlaying = false, dijkTimer = null, dijkSpeedMs = 500;
+const dijkCanvas = document.getElementById('dijkCanvas');
+
+function dijkResize() {
+  const wrap = dijkCanvas.parentElement;
+  dijkCanvas.width  = wrap.clientWidth;
+  dijkCanvas.height = wrap.clientHeight;
+}
+
+function dijkRebuild() {
+  const type = document.getElementById('dijkGraphType').value;
+  const n    = +document.getElementById('dijkN').value;
+  dijkAdj    = buildWeightedGraph(type, n);
+  dijkResize();
+  dijkPos    = circleLayout(n, dijkCanvas.width, dijkCanvas.height);
+
+  const srcSel = document.getElementById('dijkSrc');
+  const cur = Math.min(+srcSel.value, n - 1);
+  srcSel.innerHTML = [...Array(n).keys()].map(i =>
+    `<option value="${i}" ${i === cur ? 'selected' : ''}>${i}</option>`).join('');
+  dijkSrc   = cur;
+  dijkSteps = buildDijkSteps(dijkAdj, n, dijkSrc);
+  dijkReset();
+}
+
+/* FIX: dijkRenderStep was missing entirely */
+function dijkRenderStep() {
+  const si = Math.min(dijkStepIdx, dijkSteps.length - 1);
+  const s  = dijkSteps[si] || null;
+  drawDijkGraph(dijkCanvas, dijkAdj, dijkPos, s, dijkSrc);
+  document.getElementById('dijkCtr').textContent = `step ${si + 1} / ${dijkSteps.length}`;
+  if (s) {
+    document.getElementById('dijkPQItems').innerHTML =
+      s.heap.slice(0, 10).map(([d, v]) => `<div class="pq-item">(${d}, ${v})</div>`).join('');
+    document.getElementById('dijkDistBody').innerHTML =
+      s.dist.map((d, i) => {
+        const cls    = s.settled[i] ? 'td-settled' : s.inQueue[i] ? 'td-inqueue' : 'td-unseen';
+        const status = s.settled[i] ? '✓ settled'  : s.inQueue[i] ? '⟳ queued'  : '—';
+        return `<tr><td>${i}</td><td class="${cls}">${d >= INF ? '∞' : d}</td><td class="${cls}">${status}</td></tr>`;
+      }).join('');
+    document.getElementById('dijkSettled').textContent = s.settled.filter(Boolean).length;
+    document.getElementById('dijkInQueue').textContent = s.inQueue.filter(Boolean).length;
+    document.getElementById('dijkCurNode').textContent = s.current;
+  }
+}
+
+/* FIX: function name no longer collides with the step counter variable */
+function dijkStep() {
+  if (dijkStepIdx < dijkSteps.length - 1) dijkStepIdx++;
+  dijkRenderStep();
+  if (dijkStepIdx >= dijkSteps.length - 1) dijkStopPlay();
+}
+
+function dijkTogglePlay() { dijkPlaying ? dijkStopPlay() : dijkStartPlay(); }
+function dijkStartPlay() {
+  dijkPlaying = true;
+  document.getElementById('dijkBtnPlay').textContent = '⏸ PAUSE';
+  dijkTick();
+}
+function dijkStopPlay() {
+  dijkPlaying = false;
+  document.getElementById('dijkBtnPlay').textContent = '▶ PLAY';
+  clearTimeout(dijkTimer);
+}
+function dijkTick() {
+  if (!dijkPlaying) return;
+  dijkStep();
+  if (dijkStepIdx < dijkSteps.length - 1) dijkTimer = setTimeout(dijkTick, dijkSpeedMs);
+  else dijkStopPlay();
+}
+function dijkReset() {
+  dijkStopPlay();
+  dijkStepIdx = 0;
+  drawDijkGraph(dijkCanvas, dijkAdj, dijkPos, null, dijkSrc);
+  document.getElementById('dijkCtr').textContent = `step 0 / ${dijkSteps.length}`;
+  document.getElementById('dijkPQItems').innerHTML = '';
+  document.getElementById('dijkDistBody').innerHTML =
+    [...Array(dijkAdj.length).keys()].map(i =>
+      `<tr><td>${i}</td><td class="td-unseen">${i === dijkSrc ? 0 : '∞'}</td>` +
+      `<td class="td-unseen">${i === dijkSrc ? '⟳ queued' : '—'}</td></tr>`
+    ).join('');
+  document.getElementById('dijkSettled').textContent = 0;
+  document.getElementById('dijkInQueue').textContent = 1;
+  document.getElementById('dijkCurNode').textContent = '—';
+}
+
+document.getElementById('dijkSpeed').addEventListener('input', function() {
+  dijkSpeedMs = 1000 - +this.value;
+  document.getElementById('dijkSpeedLbl').textContent = `×${(1000 / dijkSpeedMs).toFixed(1)}`;
+});
+
+/* ═══════════════════════════════════════════════
+   FLOYD-WARSHALL STATE
+   FIX: renamed fwN variable to fwNodeCount to
+        avoid collision with element id="fwN"
+   FIX: fwTotalUpd now accumulates only on forward
+        steps, not on every render call
+═══════════════════════════════════════════════ */
+let fwAdj, fwPos, fwSteps, fwStepIdx = 0, fwNodeCount = 7;
+let fwPlaying = false, fwTimer = null, fwSpeedMs = 600;
+let fwTotalUpd = 0;
+const fwCanvas = document.getElementById('fwCanvas');
+
+function fwResize() {
+  const wrap = fwCanvas.parentElement;
+  fwCanvas.width  = wrap.clientWidth;
+  fwCanvas.height = wrap.clientHeight;
+}
+
+function fwRebuild() {
+  const type  = document.getElementById('fwGraphType').value;
+  fwNodeCount = +document.getElementById('fwN').value;
+  fwAdj       = buildWeightedGraph(type, fwNodeCount);
+  fwResize();
+  fwPos       = circleLayout(fwNodeCount, fwCanvas.width, fwCanvas.height);
+  fwSteps     = buildFWSteps(fwAdj, fwNodeCount);
+  fwReset();
+}
+
+function fwRenderStep() {
+  const si = Math.min(fwStepIdx, fwSteps.length - 1);
+  const s  = fwSteps[si];
+  drawFWGraph(fwCanvas, fwAdj, fwPos, s, fwNodeCount);
+  renderMatrix('fwMatrix', s.mat, fwNodeCount, s);
+  document.getElementById('fwCtr').textContent     = s.k >= 0 ? `k = ${s.k} / ${fwNodeCount - 1}` : 'Initial';
+  document.getElementById('fwStatus').innerHTML    = `<span class="fw-k">${s.label}</span>`;
+  document.getElementById('fwK').textContent       = s.k >= 0 ? s.k : '—';
+  document.getElementById('fwUpdates').textContent = s.updates.length;
+  document.getElementById('fwTotalUpdates').textContent = fwTotalUpd;
+}
+
+function fwStep() {
+  if (fwStepIdx >= fwSteps.length - 1) return;
+  fwStepIdx++;
+  /* FIX: accumulate only when actually advancing, not on every render */
+  fwTotalUpd += fwSteps[fwStepIdx].updates.length;
+  fwRenderStep();
+  if (fwStepIdx >= fwSteps.length - 1) fwStopPlay();
+}
+function fwTogglePlay() { fwPlaying ? fwStopPlay() : fwStartPlay(); }
+function fwStartPlay() {
+  fwPlaying = true;
+  document.getElementById('fwBtnPlay').textContent = '⏸ PAUSE';
+  fwTick();
+}
+function fwStopPlay() {
+  fwPlaying = false;
+  document.getElementById('fwBtnPlay').textContent = '▶ PLAY';
+  clearTimeout(fwTimer);
+}
+function fwTick() {
+  if (!fwPlaying) return;
+  fwStep();
+  if (fwStepIdx < fwSteps.length - 1) fwTimer = setTimeout(fwTick, fwSpeedMs);
+  else fwStopPlay();
+}
+function fwReset() {
+  fwStopPlay();
+  fwStepIdx = 0; fwTotalUpd = 0;
+  fwRenderStep();
+  document.getElementById('fwUpdates').textContent      = 0;
+  document.getElementById('fwTotalUpdates').textContent = 0;
+}
+
+document.getElementById('fwSpeed').addEventListener('input', function() {
+  fwSpeedMs = 1000 - +this.value;
+  document.getElementById('fwSpeedLbl').textContent = `×${(1000 / fwSpeedMs).toFixed(1)}`;
+});
+
+/* ═══════════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════════ */
+const CHART_OPTS = {
+  responsive: true, maintainAspectRatio: true,
+  plugins: {
+    legend: { labels: { color: '#4a6a8a', font: { family: 'Fira Code', size: 10 }, usePointStyle: true } }
+  },
+  scales: {
+    x: { grid: { color: 'rgba(22,34,54,0.6)' }, ticks: { color: '#3a5570', font: { family: 'Fira Code', size: 9 } } },
+    y: { grid: { color: 'rgba(22,34,54,0.6)' }, ticks: { color: '#3a5570', font: { family: 'Fira Code', size: 9 } } }
+  }
+};
+
+let charts = {};
+function makeChart(id, datasets, xLabel = 'Vertices (N)', yLabel = '', logY = false) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  const opts = JSON.parse(JSON.stringify(CHART_OPTS));
+  opts.parsing = false;
+  opts.scales.x.type = 'linear';
+  opts.scales.x.title = { display: true, text: xLabel, color: '#3a5570' };
+  opts.scales.y.title = { display: true, text: yLabel, color: '#3a5570' };
+  if (logY) { opts.scales.y.type = 'logarithmic'; }
+  charts[id] = new Chart(ctx, { type: 'line', data: { datasets }, options: opts });
+}
+
+function filterCharts(filter, el) {
+  document.querySelectorAll('#filterTabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  buildAllCharts(filter);
+}
+
+function buildDatasets(metric, filter, algoFilter) {
+  const data = filter === 'all' ? RAW_DATA : RAW_DATA.filter(d => d.graph_type === filter);
+  const colours = { 'Dijkstra': '#00c896', 'Floyd-Warshall': '#f4a261' };
+  const dashes  = { 'Sparse': [], 'Dense': [5, 4] };
+  const result = [];
+  const gtypes  = [...new Set(data.map(d => d.graph_type))];
+  const algos   = algoFilter ? [algoFilter] : ['Dijkstra', 'Floyd-Warshall'];
+  for (const gt of gtypes) {
+    for (const algo of algos) {
+      const rows = data.filter(d => d.graph_type === gt && d.algorithm === algo)
+                       .sort((a, b) => a.num_vertices - b.num_vertices);
+      if (!rows.length) continue;
+      result.push({
+        label: `${algo} — ${gt}`,
+        data: rows.map(r => ({ x: r.num_vertices, y: r[metric] })),
+        borderColor: colours[algo],
+        backgroundColor: colours[algo] + '18',
+        borderWidth: 2, pointRadius: 4, tension: 0.3,
+        borderDash: dashes[gt],
+      });
+    }
+  }
+  return result;
+}
+
+function buildAllCharts(filter = 'all') {
+  makeChart('chartTime',    buildDatasets('elapsed_ms',     filter),        'Vertices (N)', 'Time (ms)', true);
+  makeChart('chartMem',     buildDatasets('peak_memory_kb', filter),        'Vertices (N)', 'Memory (KB)');
+  makeChart('chartDijkOnly',buildDatasets('elapsed_ms',     filter, 'Dijkstra'),       'Vertices (N)', 'Time (ms)');
+  makeChart('chartFWOnly',  buildDatasets('elapsed_ms',     filter, 'Floyd-Warshall'), 'Vertices (N)', 'Time (ms)');
+}
+
+/* ═══════════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════════ */
+function buildTable() {
+  document.getElementById('tableBody').innerHTML = RAW_DATA.map(d => {
+    const cls = d.algorithm === 'Dijkstra' ? 'td-dijk' : 'td-fw';
+    const pair = RAW_DATA.find(r => r.algorithm !== d.algorithm &&
+                   r.graph_type === d.graph_type && r.num_vertices === d.num_vertices);
+    const isFaster = pair && d.elapsed_ms < pair.elapsed_ms;
+    return `<tr>
+      <td class="${cls}">${d.algorithm}</td>
+      <td>${d.graph_type}</td>
+      <td>${d.num_vertices}</td>
+      <td class="${isFaster ? 'win' : ''}">${d.elapsed_ms.toFixed(4)}</td>
+      <td>${d.peak_memory_kb.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  dijkRebuild();
+  fwRebuild();
+  buildAllCharts();
+  buildTable();
+});
+
+window.addEventListener('resize', () => {
+  if (dijkAdj) {
+    dijkResize();
+    dijkPos = circleLayout(dijkAdj.length, dijkCanvas.width, dijkCanvas.height);
+    dijkRenderStep();
+  }
+  if (fwAdj) {
+    fwResize();
+    fwPos = circleLayout(fwNodeCount, fwCanvas.width, fwCanvas.height);
+    fwRenderStep();
+  }
+});
+</script>
+</body>
+</html>

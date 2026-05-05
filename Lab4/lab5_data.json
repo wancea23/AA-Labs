@@ -1,0 +1,142 @@
+[
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Sparse",
+    "num_vertices": 10,
+    "elapsed_ms": 0.2298,
+    "peak_memory_kb": 0.2
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Sparse",
+    "num_vertices": 10,
+    "elapsed_ms": 0.2124,
+    "peak_memory_kb": 1.08
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Sparse",
+    "num_vertices": 25,
+    "elapsed_ms": 0.0398,
+    "peak_memory_kb": 0.37
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Sparse",
+    "num_vertices": 25,
+    "elapsed_ms": 1.106,
+    "peak_memory_kb": 5.47
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Sparse",
+    "num_vertices": 50,
+    "elapsed_ms": 0.0759,
+    "peak_memory_kb": 0.62
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Sparse",
+    "num_vertices": 50,
+    "elapsed_ms": 8.5269,
+    "peak_memory_kb": 20.38
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Sparse",
+    "num_vertices": 100,
+    "elapsed_ms": 0.1389,
+    "peak_memory_kb": 1.08
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Sparse",
+    "num_vertices": 100,
+    "elapsed_ms": 46.2797,
+    "peak_memory_kb": 80.67
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Sparse",
+    "num_vertices": 250,
+    "elapsed_ms": 0.4003,
+    "peak_memory_kb": 2.84
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Sparse",
+    "num_vertices": 250,
+    "elapsed_ms": 725.8963,
+    "peak_memory_kb": 499.98
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Dense",
+    "num_vertices": 10,
+    "elapsed_ms": 0.0183,
+    "peak_memory_kb": 0.19
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Dense",
+    "num_vertices": 10,
+    "elapsed_ms": 0.2317,
+    "peak_memory_kb": 1.05
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Dense",
+    "num_vertices": 25,
+    "elapsed_ms": 0.0726,
+    "peak_memory_kb": 0.65
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Dense",
+    "num_vertices": 25,
+    "elapsed_ms": 1.8981,
+    "peak_memory_kb": 5.27
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Dense",
+    "num_vertices": 50,
+    "elapsed_ms": 0.2065,
+    "peak_memory_kb": 1.28
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Dense",
+    "num_vertices": 50,
+    "elapsed_ms": 11.269,
+    "peak_memory_kb": 20.23
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Dense",
+    "num_vertices": 100,
+    "elapsed_ms": 0.4652,
+    "peak_memory_kb": 2.92
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Dense",
+    "num_vertices": 100,
+    "elapsed_ms": 74.2682,
+    "peak_memory_kb": 80.66
+  },
+  {
+    "algorithm": "Dijkstra",
+    "graph_type": "Dense",
+    "num_vertices": 200,
+    "elapsed_ms": 2.1435,
+    "peak_memory_kb": 6.23
+  },
+  {
+    "algorithm": "Floyd-Warshall",
+    "graph_type": "Dense",
+    "num_vertices": 200,
+    "elapsed_ms": 506.7298,
+    "peak_memory_kb": 320.9
+  }
+]

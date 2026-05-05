@@ -4,7 +4,6 @@ import heapq
 
 class DSU:
     """Disjoint Set Union with path compression + union by rank."""
-
     def __init__(self, n: int):
         self.parent = list(range(n))
         self.rank   = [0] * n
@@ -60,10 +59,6 @@ def prim(n: int, edges: list[tuple]) -> tuple[list, int]:
 
 
 def prim_heap(n: int, edges: list[tuple]) -> tuple[list, int]:
-    """
-    Prim's MST using a min-heap — O(E log V).
-    Faster on sparse graphs.
-    """
     adj: list[list] = [[] for _ in range(n)]
     for u, v, w in edges:
         adj[u].append((v, w))
@@ -98,7 +93,7 @@ def kruskal(n: int, edges: list[tuple]) -> tuple[list, int]:
     mst_edges    = []
 
     for u, v, w in sorted_edges:
-        if dsu.union(u, v):          # no cycle → add to MST
+        if dsu.union(u, v):          # no cycle - add to MST
             mst_edges.append((u, v, w))
             if len(mst_edges) == n - 1:
                 break                # MST is complete
@@ -107,7 +102,6 @@ def kruskal(n: int, edges: list[tuple]) -> tuple[list, int]:
     return mst_edges, total
 
 def make_sample_graph() -> tuple[int, list]:
-    """Classic 8-node weighted graph used in the visualiser."""
     n = 8
     edges = [
         (0,1,4),(0,2,6),(1,2,6),(1,3,3),
@@ -144,7 +138,6 @@ def make_random_connected_graph(n: int, density: float = 1.5) -> tuple[int, list
     return n, edges
 
 def benchmark(n: int, edges: list, runs: int = 10) -> dict:
-    """Run both algorithms `runs` times and return average times in ms."""
     prim_total = kruskal_total = 0.0
 
     for _ in range(runs):
@@ -194,9 +187,7 @@ def print_mst(name: str, mst_edges: list, total: int):
     print(f"     Total MST weight: {total}")
 
 
-# ─────────────────────────────────────────────
-#  MAIN
-# ─────────────────────────────────────────────
+
 
 def main():
     n, edges = make_sample_graph()
@@ -210,7 +201,6 @@ def main():
     print_mst("Prim's    (naive O(V²))", prim_mst, prim_total)
     print_mst("Kruskal's (O(E log E))", kruskal_mst, kruskal_total)
 
-    # ── Empirical analysis ────────────────────
     run_empirical_analysis()
 
 if __name__ == "__main__":
